@@ -26,3 +26,4 @@ python-pptx
 ddgs
 dateparser
 stripe
+psycopg2-binary

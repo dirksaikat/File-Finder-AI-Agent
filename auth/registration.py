@@ -39,6 +39,9 @@ def register(user: UserRegistration, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="All fields are required.")
     if not re.match(r"^[^@]+@[^@]+\.[^@]+$", user.email):
         raise HTTPException(status_code=400, detail="Invalid email format.")
+    user_reqord = db.query(User).filter(User.email == user.email).first()
+    if user_reqord:
+        raise HTTPException(status_code=400, detail="Email is already registered.")
     if len(user.password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters long.")
     if not re.search(r"[A-Z]", user.password):

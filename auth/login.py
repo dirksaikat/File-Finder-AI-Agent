@@ -37,4 +37,6 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     user_reqord = db.query(User).filter(User.email == user.email).first()
     if not user_reqord or not verify_password_sha256(user.password, user_reqord.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
+    if not user.is_verified:
+        raise HTTPException(status_code=403, detail="Please verify your email before logging in.")
     return {"message": "User login route is working!"}

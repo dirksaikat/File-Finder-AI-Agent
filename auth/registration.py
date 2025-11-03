@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 import re
 from database.db import Base, engine, SessionLocal
 from sqlalchemy.orm import Session
-from database.models import User
+from database.models import User, VerificationToken
+from utils.mailer import send_verification_email
+import hashlib
+from utils.verify_code import make_code_and_hash
 
 registration_router = APIRouter(
     prefix="/register",
@@ -27,12 +30,12 @@ def get_db():
         db.close()
 
 
-import hashlib
 def hash_password(p: str) -> str:
     return hashlib.sha256(p.encode("utf-8")).hexdigest()
 
+
 @registration_router.post("/")
-def register(user: UserRegistration, db: Session = Depends(get_db)):
+def register(user: UserRegistration,bg: BackgroundTasks, db: Session = Depends(get_db)):
     required_fields = [user.name, user.email, user.password, user.confirm_password, user.terms_accepted]
 
     if not all(required_fields):
@@ -55,13 +58,27 @@ def register(user: UserRegistration, db: Session = Depends(get_db)):
     if not user.terms_accepted:
         raise HTTPException(status_code=400, detail="Terms must be accepted.")
     user_record = User(
-        name=user.name,
-        email=user.email,
-        hashed_password=hash_password(user.password),
-        terms_accepted=user.terms_accepted
-    )
+            name=user.name,
+            email=user.email,
+            hashed_password=hash_password(user.password),
+            terms_accepted=user.terms_accepted,
+            is_verified=False,
+        )
     db.add(user_record)
+    db.flush()  # get user_record.id
+
+    code, salt, digest, expires_at = make_code_and_hash(ttl_minutes=10)
+
+    tok = VerificationToken(
+        user_id=user_record.id,
+        token=digest,
+        purpose="verify_code",
+        salt=salt,
+        expires_at=expires_at,
+    )
+    db.add(tok)
     db.commit()
 
-    
-    return {"message": "User registration route is working!"}
+    body = f"Your verification code is: {code}\nIt expires in 10 minutes."
+    bg.add_task(send_verification_email, user_record.email, "Your verification code", body)
+    return {"message": "Registration successful. Please check your email to verify your account."}

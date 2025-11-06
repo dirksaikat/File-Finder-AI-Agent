@@ -13,6 +13,7 @@ registration_router = APIRouter(
     tags=["registration"],
 )
 
+
 class UserRegistration(BaseModel):
     name: str
     email: str

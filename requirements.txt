@@ -27,4 +27,4 @@ ddgs
 dateparser
 stripe
 psycopg2-binary
-jose
+python-jose

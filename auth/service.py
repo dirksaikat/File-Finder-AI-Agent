@@ -1,16 +1,15 @@
 from database.models import User, VerificationToken, PasswordResetToken
-from utils.utils import get_password_hash, verify_password, create_access_token, decode_access_token
-from database.db import get_session
+from utils.utils import get_password_hash, verify_password
 from database.schemas import UserCreateSchema, LoginSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select, desc
 
 
 class AuthService:
-    def get_user_by_email(self, session: AsyncSession, email: str) -> User | None:
-        user = session.execute(
+    async def get_user_by_email(self, session: AsyncSession, email: str) -> User | None:
+        user = await session.execute(
             select(User).where(User.email == email)
-        ).scalars().first()
+        )
         return user
     
     def user_exists(self, session: AsyncSession, email: str) -> bool:
@@ -32,12 +31,14 @@ class AuthService:
     
 
 
-    def authenticate_user(self, session: AsyncSession, login_data: LoginSchema) -> User | None:
-        user = self.get_user_by_email(session, login_data.email)
+    async def authenticate_user(self, session: AsyncSession, login_data: LoginSchema) -> User | None:
+        user = await self.get_user_by_email(session, login_data.email)
         if user and verify_password(login_data.password, user.hashed_password):
             return user
         return None
     
     def user_is_verified(self, user: User) -> bool:
         return user.is_verified
+    
+
     

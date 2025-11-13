@@ -7,10 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 
-router = APIRouter(prefix="/register", tags=["auth"])
+register_router = APIRouter(prefix="/register", tags=["auth"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@register_router.post("/", status_code=status.HTTP_201_CREATED)
 async def register_user(
     user_data: UserCreateSchema,
     session: AsyncSession = Depends(get_session)

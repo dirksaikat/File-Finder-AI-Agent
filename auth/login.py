@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from database.models import User
 from utils.utils import create_access_token, decode_access_token
 from database.db import get_session
@@ -6,12 +6,12 @@ from database.schemas import LoginSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth.service import AuthService
 
-router = APIRouter(prefix="/login", tags=["auth"])
+login_router = APIRouter(prefix="/login", tags=["auth"])
 
-@router.post("/", status_code=status.HTTP_200_OK)
+@login_router.post("/", status_code=status.HTTP_200_OK)
 async def login_user(Login_data: LoginSchema, response: Response, session: AsyncSession = Depends(get_session)):
     auth_service = AuthService()
-    user = auth_service.authenticate_user(session, Login_data)
+    user = await auth_service.authenticate_user(session, Login_data)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -37,20 +37,30 @@ async def login_user(Login_data: LoginSchema, response: Response, session: Async
 
     return {"user": user.email, "access_token": access_token, "token_type": "bearer"}
 
-@router.get("/me", status_code=status.HTTP_200_OK)
-async def get_current_user(token: str = Depends(), session: AsyncSession = Depends(get_session)):
+@login_router.get("/me", status_code=status.HTTP_200_OK)
+async def get_current_user(
+    token: str = Cookie(None, alias="access_token"),
+    session: AsyncSession = Depends(get_session),
+):
+    if token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     payload = decode_access_token(token)
     email: str = payload.get("sub")
     if email is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials."
+            detail="Could not validate credentials.",
         )
+
     auth_service = AuthService()
     user = auth_service.get_user_by_email(session, email)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found."
+            detail="User not found.",
         )
     return user

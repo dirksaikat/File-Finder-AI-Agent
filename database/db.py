@@ -1,12 +1,12 @@
 # db.py (PostgreSQL version)
 from sqlmodel import create_engine, SQLModel
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from database.config import config
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 
-engine = AsyncEngine = create_engine(
+engine = AsyncEngine = create_async_engine(
     url = config.DATABASE_URL,
     echo=True,
  )

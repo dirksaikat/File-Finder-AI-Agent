@@ -12,7 +12,6 @@ class User(SQLModel, table=True):
     terms_accepted: bool
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-
     verification_tokens: List["VerificationToken"] = Relationship(back_populates="user")
     password_reset_tokens: List["PasswordResetToken"] = Relationship(back_populates="user")
 

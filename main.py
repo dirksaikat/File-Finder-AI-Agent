@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from auth.login import login_router
-from auth.registration import registration_router
+from auth.registration import register_router
 from auth.password_reset import password_reset_router
 from auth.verify import verify_router
 from database.db import init_db
@@ -11,7 +11,7 @@ import uvicorn
 
 app = FastAPI()
 app.include_router(login_router)
-app.include_router(registration_router)
+app.include_router(register_router)
 app.include_router(verify_router)
 app.include_router(password_reset_router)
 
@@ -24,7 +24,10 @@ app.add_middleware(
 )
 
 
-init_db()
+@app.on_event("startup")
+async def on_startup():
+    # 👇 this will create tables if they don't exist
+    await init_db()
 
 @app.get("/")
 async def home():

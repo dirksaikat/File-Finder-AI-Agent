@@ -1,6 +1,11 @@
 # utils/verify_code.py (new helper)
 import hashlib, os, random
 from datetime import datetime, timedelta
+from pydantic import BaseModel
+
+
+class VerifyCode(BaseModel):
+    code: str
 
 def make_code_and_hash(ttl_minutes=10):
     code = f"{random.randint(100000, 999999)}"

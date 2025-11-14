@@ -35,7 +35,7 @@ async def login_user(Login_data: LoginSchema, response: Response, session: Async
         secure=True,
     )
 
-    return {"user": user.email, "access_token": access_token, "token_type": "bearer"}
+    return {"user": user}
 
 @login_router.get("/me", status_code=status.HTTP_200_OK)
 async def get_current_user(

@@ -1,8 +1,11 @@
-from database.models import User, VerificationToken, PasswordResetToken
-from utils.utils import get_password_hash, verify_password
+from fastapi_mail import MessageSchema
+from fastapi import BackgroundTasks
+from database.models import User
+from utils.utils import get_password_hash, verify_password, generate_verification_code, get_verification_expiry
 from database.schemas import UserCreateSchema, LoginSchema
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, desc
+from sqlmodel import select
+from utils.mailer import fm
 
 
 class AuthService:
@@ -32,13 +35,49 @@ class AuthService:
 
 
     async def authenticate_user(self, session: AsyncSession, login_data: LoginSchema) -> User | None:
-        user = await self.get_user_by_email(session, login_data.email)
+        result = await self.get_user_by_email(session, login_data.email)
+        user = result.scalars().first()
         if user and verify_password(login_data.password, user.hashed_password):
             return user
         return None
     
     def user_is_verified(self, user: User) -> bool:
         return user.is_verified
+    
+
+    async def send_verification_code_email(
+        self,
+        session: AsyncSession,
+        user: User,
+        background_tasks: BackgroundTasks,
+    ):
+        """
+        Generate a 6-digit code, save it to the user, and send via email.
+        """
+
+        # 1️⃣ Generate code + expiry
+        code = generate_verification_code()
+        expires_at = get_verification_expiry()
+
+        # 2️⃣ Save to user in DB
+        user.verification_code = code
+        user.verification_expires_at = expires_at
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+
+        # 3️⃣ Build email content
+        body = f"Your verification code is: {code}\nThis code will expire in 10 minutes."
+
+        message = MessageSchema(
+            subject="Your verification code",
+            recipients=[user.email],
+            body=body,
+            subtype="plain",
+        )
+
+        # 4️⃣ Send in background
+        background_tasks.add_task(fm.send_message, message)
     
 
     

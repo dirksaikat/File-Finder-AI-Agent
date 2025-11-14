@@ -33,3 +33,4 @@ passlib
 pydantic_settings
 asyncpg
 bcrypt==4.3.0
+fastapi-mail

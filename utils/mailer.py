@@ -4,12 +4,13 @@ from database.config import config
 
 
 
+
 class Settings(BaseModel):
-    MAIL_USERNAME: str = "your_email@gmail.com"
-    MAIL_PASSWORD: str = "your_app_password"
-    MAIL_FROM: EmailStr = "your_email@gmail.com"
+    MAIL_USERNAME: str = "kayley62@ethereal.email"
+    MAIL_PASSWORD: str = "QGDDaVcPcNYrkpx9Xy"
+    MAIL_FROM: str = "your_email@gmail.com"
     MAIL_PORT: int = 587
-    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_SERVER: str = "smtp.ethereal.email"
     MAIL_FROM_NAME: str = "File Finder App"
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False

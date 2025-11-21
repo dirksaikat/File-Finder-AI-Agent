@@ -1,6 +1,6 @@
 from fastapi_mail import MessageSchema
 from fastapi import BackgroundTasks
-from database.models import User
+from database.models import User, VerificationToken
 from utils.utils import get_password_hash, verify_password, generate_verification_code, get_verification_expiry
 from database.schemas import UserCreateSchema, LoginSchema
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,12 +59,15 @@ class AuthService:
         code = generate_verification_code()
         expires_at = get_verification_expiry()
 
-        # 2️⃣ Save to user in DB
-        user.verification_code = code
-        user.verification_expires_at = expires_at
-        session.add(user)
+        token = VerificationToken(
+            user_id= user.id,
+            token=code,
+            purpose="Verify Email",
+            expires_at=expires_at
+        )
+        session.add(token)
         await session.commit()
-        await session.refresh(user)
+        await session.refresh(token)
 
         # 3️⃣ Build email content
         body = f"Your verification code is: {code}\nThis code will expire in 10 minutes."

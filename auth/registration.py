@@ -5,7 +5,7 @@ from database.db import get_session
 from database.schemas import UserCreateSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from service import AuthService
+from .service import AuthService
 
 
 register_router = APIRouter(prefix="/register", tags=["auth"])

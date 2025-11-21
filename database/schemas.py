@@ -40,3 +40,7 @@ class UserCreateSchema(BaseModel):
 class LoginSchema(BaseModel):
     email: str
     password: str
+
+
+class VerifyEmail(BaseModel):
+    email: str

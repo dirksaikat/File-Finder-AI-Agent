@@ -1,16 +1,17 @@
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import BaseModel
 from database.config import config
+import os
 
 
 
 
 class Settings(BaseModel):
-    MAIL_USERNAME: str = "kayley62@ethereal.email"
-    MAIL_PASSWORD: str = "QGDDaVcPcNYrkpx9Xy"
-    MAIL_FROM: str = "your_email@gmail.com"
-    MAIL_PORT: int = 587
-    MAIL_SERVER: str = "smtp.ethereal.email"
+    MAIL_USERNAME: str = os.getenv("SMTP_USERNAME", "emmy.blanda37@ethereal.email")
+    MAIL_PASSWORD: str = os.getenv("SMTP_PASSWORD", "ekcznxnyECvVr7wJtG")
+    MAIL_FROM: str = os.getenv("FROM_EMAIL", "your_email@gmail.com")
+    MAIL_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    MAIL_SERVER: str = os.getenv("SMTP_SERVER", "smtp.ethereal.email")
     MAIL_FROM_NAME: str = "File Finder App"
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False

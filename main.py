@@ -12,8 +12,8 @@ import uvicorn
 app = FastAPI()
 app.include_router(login_router)
 app.include_router(register_router)
-app.include_router(verify_router)
 app.include_router(password_reset_router)
+app.include_router(verify_router)
 
 app.add_middleware(
     CORSMiddleware,

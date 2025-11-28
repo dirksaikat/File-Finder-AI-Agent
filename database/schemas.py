@@ -42,5 +42,10 @@ class LoginSchema(BaseModel):
     password: str
 
 
+class SendCode(BaseModel):
+    email: str
+
+
 class VerifyEmail(BaseModel):
     email: str
+    code: str
